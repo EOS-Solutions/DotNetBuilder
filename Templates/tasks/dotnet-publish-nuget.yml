@@ -21,6 +21,12 @@ steps:
   inputs:
     nuGetServiceConnections: ${{ parameters.authenticateFeeds }}
 
+- template: ./install-psmodule-list.yml
+  parameters:
+    moduleName: DotNetBuilder
+    alwaysUpdate: true
+    pwsh: true
+
 - task: PowerShell@2
   displayName: 'Push to ${{ parameters.name }}'
   inputs:
@@ -35,15 +41,23 @@ steps:
           return
       }
 
+      Import-Module DotNetBuilder
+
       $feedUri = "${{ parameters.feedUri }}"
-      $Credentials = Get-NugetCredentials -Uri $feedUri -Verbose
+      $apiKey = "${{ parameters.apiKey }}"
+      if (-not $apiKey) {
+        Write-Host "No API key provided, attempting read from VSS authenticate ..."
+        $Credentials = Get-NugetCredentials -Uri $feedUri -Verbose
+        $apiKey = $Credentials.GetNetworkCredential().Password
+        Write-Host "Got API key length $($apiKey.Length)"
+      }
 
       foreach ($NugetPackage in $NuGetPackages) {
         $nugetPushArgs = @(
             "nuget", "push"
             $NugetPackage.Fullname
             "--source", $feedUri
-            "--api-key", "${{ parameters.apiKey }}"
+            "--api-key", $apiKey
         )
         & dotnet @nugetPushArgs
         if ($LASTEXITCODE -ne 0) { throw "Failed" }

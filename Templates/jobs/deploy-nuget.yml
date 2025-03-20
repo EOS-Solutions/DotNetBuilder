@@ -11,6 +11,9 @@ parameters:
 - name: feedApiKey
   type: string
   default: ''
+- name: authenticateFeeds
+  type: string
+  default: ''
 
 jobs:
 - deployment:
@@ -34,3 +37,4 @@ jobs:
             name: '${{ parameters.feedName }}'
             feedUri: '${{ parameters.feedUri }}'
             apiKey: '${{ parameters.feedApiKey }}'
+            authenticateFeeds: '${{ parameters.authenticateFeeds }}'
