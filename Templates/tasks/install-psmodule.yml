@@ -1,0 +1,46 @@
+parameters:
+- name: feedUri # the URL of the powershellget feed
+  type: string
+  default: 'https://www.powershellgallery.com/api/v2'
+- name: moduleName # the name of the module to install
+  type: string
+- name: username # if specified, use this credential for the feed (optional)
+  type: string
+  default: ''
+- name: password # if specified, use this credential for the feed (optional)
+  type: string
+  default: ''
+- name: minVersion # if specified, require this minimum version
+  type: string
+  default: ''
+- name: alwaysUpdate # if specified, use powershell core instead of windows powershell (optional)
+  type: boolean
+  default: false
+- name: pwsh # if specified, use powershell core instead of windows powershell (optional)
+  type: boolean
+  default: false
+
+steps:
+
+- task: PowerShell@2
+  displayName: 'Install Module "${{ parameters.moduleName }}"'
+  inputs:
+    targetType: inline
+    pwsh: ${{ parameters.pwsh }}
+    script: |
+      if ('${{ parameters.password }}') {
+        $SecurePassword = ConvertTo-SecureString -String '${{ parameters.password }}' -AsPlainText -Force
+        $username = '${{ parameters.username }}'
+        if (-not $username) { $username = 'pat' }
+        $Credential = New-Object pscredential -ArgumentList ($username, $SecurePassword)
+      }
+
+      Invoke-Expression ". { $(Invoke-RestMethod https://raw.githubusercontent.com/EOS-Solutions/PSCiCdHelper/main/install.ps1 -Headers @{"Cache-Control" = "no-cache"}) }"
+      $importArgs = @{
+          ModuleName   = '${{ parameters.moduleName }}'
+          FeedUri      = '${{ parameters.feedUri }}'
+          Credential   = $Credential
+          EnsureLatest = '${{ parameters.alwaysUpdate }}' -eq 'true'
+      }
+      if ($MinVersion) { $importArgs.Add('MinimumVersion', [Version] $MinVersion) }
+      Import-PSModule @importArgs

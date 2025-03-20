@@ -1,0 +1,35 @@
+parameters:
+- name: dotNetVersion
+  type: string
+  default: 6.x
+- name: feedName
+  type: string
+  default: 'Nuget Feed'
+- name: feedUri
+  type: string
+  default: 'https://api.nuget.org/v3/index.json'
+- name: feedApiKey
+  type: string
+
+- deployment:
+  displayName: 'Push to Nuget'
+  environment: 'Azure Artifacts'
+  condition: eq( '${{ parameters.deployToArtifacts }}', true )
+
+  pool: 
+    vmImage: 'windows-latest'
+
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+
+        - task: UseDotNet@2
+          inputs:
+            version: ${{ parameters.dotNetVersion }}
+
+        - template: '../tasks/dotnet-publish-nuget.yml'
+          parameters:
+            name: '${{ parameters.feedName }}'
+            feedUri: '${{ parameters.feedUri }}'
+            apiKey: '${{ parameters.feedApiKey }}'

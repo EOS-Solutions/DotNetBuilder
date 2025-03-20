@@ -1,0 +1,32 @@
+parameters:
+- name: moduleName # a list of modules to install, separated by comma
+  type: string
+- name: feedUri # the URL of the powershellget feed
+  type: string
+- name: username # if specified, use this credential for the feed (optional)
+  type: string
+  default: ''
+- name: password # if specified, use this credential for the feed (optional)
+  type: string
+  default: ''
+- name: alwaysUpdate # specifies if the module should always be tried to be updated from the source feed
+  type: boolean
+  default: false
+- name: minVersion # if specified, require this minimum version
+  type: string
+  default: ''
+- name: pwsh # if specified, use powershell core instead of windows powershell (optional)
+  type: boolean
+  default: false
+
+steps:
+- ${{ each var in split(parameters.moduleName, ',') }}:
+  - template: ./install-psmodule.yml
+    parameters:
+      moduleName: ${{ var }}
+      feedUri: ${{ parameters.feedUri }}
+      username: ${{ parameters.username }}
+      password: ${{ parameters.password }}
+      alwaysUpdate: ${{ parameters.alwaysUpdate }}
+      minVersion: ${{ parameters.minVersion }}
+      pwsh: ${{ parameters.pwsh }}

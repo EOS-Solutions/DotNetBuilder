@@ -1,0 +1,37 @@
+parameters:
+- name: sourceFolder # the source folder of the pacakge to be published
+  type: string
+- name: packageVersion # the source folder of the pacakge to be published
+  type: string
+  default: ''
+- name: public
+  type: boolean
+  default: false
+
+jobs:
+- deployment: Deploy_Installer_Gin
+  displayName: 'Deploy to Installer (using gin)'
+  environment: 'Installer'
+  pool:
+    vmImage: 'windows-latest'
+  variables:
+  - group: 'Installer_Publish'
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: NuGetAuthenticate@1
+          inputs:
+            ${{ if eq(parameters.public, true) }}:
+              nuGetServiceConnections: 'Installer-Public'
+            ${{ else }}:
+              nuGetServiceConnections: 'Installer-Internal'
+        - template: '../tasks/publish-installer-gin.yml@templates'
+          parameters:
+            ${{ if eq(parameters.public, true) }}:
+              feedName: public
+            ${{ else }}:
+              feedName: internal
+            packageFolder: ${{ parameters.sourceFolder }}
+            packageVersion: ${{ parameters.packageVersion }}
+            iconStorageAccessKey: $(IconStorageAccessKey)

@@ -1,0 +1,38 @@
+parameters:
+- name: AzureSubscriptionName
+  type: string
+- name: AzureResourceGroupName
+  type: string
+- name: AppType
+  type: string
+- name: AppName
+  type: string
+- name: SlotName
+  type: string
+- name: PackagePath
+  type: string
+  default: '$(Pipeline.Workspace)/output'
+
+jobs:
+- deployment: AzureWebApp
+  displayName: 'Push to Azure WebApp'
+  environment: 'Azure'
+  
+  pool: 
+    vmImage: 'windows-latest'
+
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+
+        - task: AzureRmWebAppDeployment@4
+          displayName: 'Deploy Azure App Service'
+          inputs:
+            azureSubscription: '${{ parameters.AzureSubscriptionName }}'
+            appType: '${{ parameters.AppType }}'
+            WebAppName: '${{ parameters.AppName }}'
+            deployToSlotOrASE: true
+            ResourceGroupName: '${{ parameters.AzureResourceGroupName }}'
+            SlotName: '${{ parameters.SlotName }}'
+            Package: '${{ parameters.PackagePath }}'

@@ -1,0 +1,136 @@
+parameters:
+- name: dotNetVersion
+  type: string
+  default: 6.x
+- name: buildVersion
+  type: string
+  default: ''
+- name: folder
+  type: string
+  default: ''
+- name: artifactName
+  type: string
+  default: output
+- name: nugetServiceConnections
+  type: string
+  default: 'ProGet NuGet (Read)'
+- name: runLocal
+  type: boolean
+  default: false
+
+jobs:
+- job: 'build_and_test'
+  displayName: 'Build & Test'
+
+  pool: 
+    vmImage: 'windows-latest'
+  
+  variables:
+  - group: "dotNet"
+
+  workspace:
+    clean: all
+
+  steps:
+
+  - template: ../tasks/install-psmodule-list.yml
+    parameters:
+      moduleName: DotNetBuilder
+      alwaysUpdate: true
+      pwsh: true
+
+  - task: UseDotNet@2
+    inputs:
+      version: ${{ parameters.dotNetVersion }}
+
+  - task: PowerShell@2
+    displayName: Pre-Build Scripts
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        Import-Module DotNetBuilder
+        . $DotNetBuilder_Root\dotNetCustomScripts.ps1 -Hook PreBuild
+
+  - task: NuGetAuthenticate@1
+    condition: ne('${{ parameters.nugetServiceConnections }}', '')
+    displayName: Authenticate NuGet
+    inputs:
+      nuGetServiceConnections: ${{ parameters.nugetServiceConnections }}
+
+  - task: PowerShell@2
+    displayName: Build
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        $BuildVersion = '${{ parameters.buildVersion }}'
+        if (-not $BuildVersion) { $BuildVersion = $env:BUILD_VERSION }
+        $Folder = '${{ parameters.folder }}'
+        if (-not $Folder) { $Folder = $pwd }
+        Import-Module DotNetBuilder
+        . $DotNetBuilder_Root\dotNetBuild.ps1 -Folder $Folder -BuildVersion $BuildVersion
+
+  - task: PowerShell@2
+    displayName: Publish
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        $BuildVersion = '${{ parameters.buildVersion }}'
+        if (-not $BuildVersion) { $BuildVersion = $env:BUILD_VERSION }
+        $Folder = '${{ parameters.folder }}'
+        if (-not $Folder) { $Folder = $pwd }
+        Import-Module DotNetBuilder
+        . $DotNetBuilder_Root\dotNetPublish.ps1 -Folder $Folder
+
+  - task: PowerShell@2
+    displayName: Pre-Test Scripts
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        Import-Module DotNetBuilder
+        . $DotNetBuilder_Root\dotNetCustomScripts.ps1 -Hook PreTest
+  - task: PowerShell@2
+    displayName: Run Tests
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        Import-Module DotNetBuilder
+        $Folder = '${{ parameters.folder }}'
+        if (-not $Folder) { $Folder = $pwd }
+        . $DotNetBuilder_Root\dotNetTest.ps1 -Folder $Folder
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    inputs:
+      testResultsFormat: 'XUnit'
+      testResultsFiles: '**/test-results-*.xml'
+      failTaskOnFailedTests: true
+
+  - task: PowerShell@2
+    displayName: Pack
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        Import-Module DotNetBuilder
+        $Folder = '${{ parameters.folder }}'
+        if (-not $Folder) { $Folder = $pwd }
+        . $DotNetBuilder_Root\dotNetPack.ps1 -Folder $Folder
+
+  - task: PowerShell@2
+    displayName: Post-Build Scripts
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        Import-Module DotNetBuilder
+        . $DotNetBuilder_Root\dotNetCustomScripts.ps1 -Hook PostBuild
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish artifacts
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifactName: ${{ parameters.artifactName }}

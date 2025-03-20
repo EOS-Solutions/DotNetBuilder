@@ -1,0 +1,38 @@
+parameters:
+- name: feedUri # the URL of the powershellget feed
+  type: string
+- name: packageFolder # the root folder containing package to be published
+  type: string
+- name: apiKey # the API key to use for publishing
+  type: string
+  default: vsts
+- name: packageVersion # the version to publish the packages as. Defaults to $env:Build_Version
+  type: string
+  default: ''
+- name: iconStorageAccessKey # an API key to use for publishing metadata to github
+  type: string
+  default: ''
+
+steps:
+- task: PowerShell@2
+  displayName: Publish Package to Installer
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      Import-Module Eos.Installer
+      $isDebug = $env:System_Debug -ieq 'true'
+      $Version = "${{ parameters.packageVersion }}"
+      $iconStorageAccessKey = '${{ parameters.iconStorageAccessKey }}'
+
+      if (-not $Version) { $Version = $env:Build_Version }
+      Write-Host "Version: $Version"
+
+      Eos.Installer\Update-InstallerManifest -Folder '${{ parameters.packageFolder }}' -Version $Version -Verbose
+      $feed = Eos.Installer\New-NugetInstallerFeed -EndpointUri '${{ parameters.feedUri }}' -AuthenticationType Credentials -Verbose
+      $session = Eos.Installer\New-InstallerSession -Feed $feed -Verbose
+      if ($iconStorageAccessKey) {
+        Write-Host "Enabling write access to icon storage"
+        $session.IconProvider.EnableWriteAccess($iconStorageAccessKey)
+      }
+      Publish-InstallerPackage -SourceFolder '${{ parameters.packageFolder }}' -PublishKey '${{ parameters.apiKey }}' -Session $session -Verbose

@@ -1,0 +1,45 @@
+parameters:
+- name: feedUri # the URL of the powershellget feed
+  type: string
+- name: apiKey # the API key to use for publishing
+  type: string
+- name: authenticateFeeds # if specified, use this credential for the feed (optional)
+  type: string
+  default: ''
+- name: sourceFolder # the URL of the powershellget feed
+  type: string
+  default: 'output'
+- name: name # the URL of the powershellget feed
+  type: string
+  default: 'NuGet Feed'
+
+steps:
+
+- task: NuGetAuthenticate@1
+  inputs:
+    nuGetServiceConnections: ${{ parameters.authenticateFeeds }}
+
+- task: PowerShell@2
+  displayName: 'Push to ${{ parameters.name }}'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $ArtifactRoot = "$(Pipeline.Workspace)"
+      $ArtifactRoot = [IO.Path]::Combine($ArtifactRoot, '${{ parameters.sourceFolder }}')
+      $NugetPackages = Get-ChildItem $ArtifactRoot -Filter *.nupkg -Recurse
+      if (-not $NugetPackages) {
+          Write-Host "No NuGet packages found in '$ArtifactRoot', exiting ..."
+          return
+      }
+      foreach ($NugetPackage in $NuGetPackages) {
+
+        $nugetPushArgs = @(
+            "nuget", "push"
+            $NugetPackage.Fullname
+            "--source", "${{ parameters.feedUri }}"
+            "--api-key", "${{ parameters.apiKey }}"
+        )
+        & dotnet @nugetPushArgs
+        if ($LASTEXITCODE -ne 0) { throw "Failed" }
+      }
