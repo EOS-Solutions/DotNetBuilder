@@ -34,12 +34,15 @@ steps:
           Write-Host "No NuGet packages found in '$ArtifactRoot', exiting ..."
           return
       }
-      foreach ($NugetPackage in $NuGetPackages) {
 
+      $feedUri = "${{ parameters.feedUri }}"
+      $Credentials = Get-NugetCredentials -Uri $feedUri -Verbose
+
+      foreach ($NugetPackage in $NuGetPackages) {
         $nugetPushArgs = @(
             "nuget", "push"
             $NugetPackage.Fullname
-            "--source", "${{ parameters.feedUri }}"
+            "--source", $feedUri
             "--api-key", "${{ parameters.apiKey }}"
         )
         & dotnet @nugetPushArgs
