@@ -59,4 +59,4 @@ function Get-NugetCredentials {
     }
 
 }
-Export-ModuleMember "Get-CredsFromRegEndpoints"
+Export-ModuleMember "Get-NugetCredentials"
