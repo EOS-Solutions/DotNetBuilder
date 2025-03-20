@@ -10,6 +10,7 @@ parameters:
   default: 'https://api.nuget.org/v3/index.json'
 - name: feedApiKey
   type: string
+  default: ''
 
 - deployment:
   displayName: 'Push to Nuget'

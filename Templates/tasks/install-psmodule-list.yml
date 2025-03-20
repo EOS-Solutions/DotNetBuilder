@@ -1,8 +1,10 @@
 parameters:
 - name: moduleName # a list of modules to install, separated by comma
   type: string
+  default: ''
 - name: feedUri # the URL of the powershellget feed
   type: string
+  default: ''
 - name: username # if specified, use this credential for the feed (optional)
   type: string
   default: ''

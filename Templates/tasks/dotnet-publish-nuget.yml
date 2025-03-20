@@ -1,8 +1,10 @@
 parameters:
 - name: feedUri # the URL of the powershellget feed
   type: string
+  default: ''
 - name: apiKey # the API key to use for publishing
   type: string
+  default: ''
 - name: authenticateFeeds # if specified, use this credential for the feed (optional)
   type: string
   default: ''
