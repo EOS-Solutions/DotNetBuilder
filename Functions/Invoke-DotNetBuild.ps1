@@ -27,7 +27,6 @@ function Invoke-DotNetBuild {
         $Folder = [IO.Path]::GetDirectoryName($SolutionFilename)
     }
 
-    $NugetConfigFilename = [IO.Path]::Combine($Folder, "nuget.config")
 
     Write-Host "$spacer"
     Write-Host "Restoring solution '$SolutionFilename'"
@@ -35,8 +34,15 @@ function Invoke-DotNetBuild {
     $restoreArgs = @(
         "restore"
         $SolutionFilename
-        "--configfile", $NugetConfigFilename
     )
+
+    $NugetConfigFile = [System.IO.FileInfo]::new([IO.Path]::Combine($Folder, "nuget.config"))
+    if ($NugetConfigFile.Exists) {
+        $restoreArgs += @(
+            "--configfile", $NugetConfigFile.FullName
+        )
+    }
+
     if (-not $env:AGENT_ID) { 
         $restoreArgs += @( "--interactive" )
     }
