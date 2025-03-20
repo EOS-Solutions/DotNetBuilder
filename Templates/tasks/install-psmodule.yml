@@ -29,7 +29,7 @@ steps:
     pwsh: ${{ parameters.pwsh }}
     script: |
       $feedUri = '${{ parameters.feedUri }}'
-      if (-not $feedUri) { $feedUri = 'https://www.powershellgallery.com/api/v2/' }
+      if (-not $feedUri) { $feedUri = 'https://www.powershellgallery.com/api/v2' }
 
       if ('${{ parameters.password }}') {
         $SecurePassword = ConvertTo-SecureString -String '${{ parameters.password }}' -AsPlainText -Force
