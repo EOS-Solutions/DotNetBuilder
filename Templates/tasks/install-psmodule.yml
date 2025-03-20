@@ -1,7 +1,7 @@
 parameters:
 - name: feedUri # the URL of the powershellget feed
   type: string
-  default: 'https://www.powershellgallery.com/api/v2'
+  default: asd
 - name: moduleName # the name of the module to install
   type: string
 - name: username # if specified, use this credential for the feed (optional)
@@ -36,6 +36,9 @@ steps:
       }
 
       Invoke-Expression ". { $(Invoke-RestMethod https://raw.githubusercontent.com/EOS-Solutions/PSCiCdHelper/main/install.ps1 -Headers @{"Cache-Control" = "no-cache"}) }"
+      Write-Host "Using module '${{ parameters.moduleName }}'"
+      Write-Host "Using feed '${{ parameters.feedUri }}'"
+      Write-Host "Using feed '$env:feedUri'"
       $importArgs = @{
           ModuleName   = '${{ parameters.moduleName }}'
           FeedUri      = '${{ parameters.feedUri }}'

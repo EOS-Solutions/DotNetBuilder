@@ -13,7 +13,7 @@ parameters:
   default: output
 - name: nugetServiceConnections
   type: string
-  default: 'ProGet NuGet (Read)'
+  default: ''
 - name: runLocal
   type: boolean
   default: false
@@ -25,9 +25,6 @@ jobs:
   pool: 
     vmImage: 'windows-latest'
   
-  variables:
-  - group: "dotNet"
-
   workspace:
     clean: all
 
@@ -52,11 +49,12 @@ jobs:
         Import-Module DotNetBuilder
         . $DotNetBuilder_Root\dotNetCustomScripts.ps1 -Hook PreBuild
 
-  - task: NuGetAuthenticate@1
-    condition: ne('${{ parameters.nugetServiceConnections }}', '')
-    displayName: Authenticate NuGet
-    inputs:
-      nuGetServiceConnections: ${{ parameters.nugetServiceConnections }}
+  - ${{ if ne(parameters.nugetServiceConnections, '') }}:
+    - task: NuGetAuthenticate@1
+      condition: ne('${{ parameters.nugetServiceConnections }}', '')
+      displayName: Authenticate NuGet
+      inputs:
+        nuGetServiceConnections: ${{ parameters.nugetServiceConnections }}
 
   - task: PowerShell@2
     displayName: Build

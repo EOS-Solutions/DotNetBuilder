@@ -12,10 +12,10 @@ parameters:
   type: string
   default: ''
 
+jobs:
 - deployment:
-  displayName: 'Push to Nuget'
-  environment: 'Azure Artifacts'
-  condition: eq( '${{ parameters.deployToArtifacts }}', true )
+  displayName: 'Push to ${{ parameters.feedName }}'
+  environment: '${{ parameters.feedName }}'
 
   pool: 
     vmImage: 'windows-latest'
