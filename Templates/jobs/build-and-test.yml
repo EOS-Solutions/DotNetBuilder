@@ -49,12 +49,10 @@ jobs:
         Import-Module DotNetBuilder
         . $DotNetBuilder_Root\dotNetCustomScripts.ps1 -Hook PreBuild
 
-  - ${{ if ne(parameters.nugetServiceConnections, '') }}:
-    - task: NuGetAuthenticate@1
-      condition: ne('${{ parameters.nugetServiceConnections }}', '')
-      displayName: Authenticate NuGet
-      inputs:
-        nuGetServiceConnections: ${{ parameters.nugetServiceConnections }}
+  - task: NuGetAuthenticate@1
+    displayName: Authenticate Nuget
+    inputs:
+      nuGetServiceConnections: ${{ parameters.nugetServiceConnections }}
 
   - task: PowerShell@2
     displayName: Build
