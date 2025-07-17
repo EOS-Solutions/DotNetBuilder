@@ -12,9 +12,12 @@ parameters:
 - name: PackagePath
   type: string
   default: '$(Pipeline.Workspace)/output'
+- name: JobName
+  type: string
+  default: AzureWebApp
 
 jobs:
-- deployment: AzureWebApp
+- deployment: '${{ parameters.JobName }}'
   displayName: 'Push to Azure WebApp'
   environment: 'Azure'
   
