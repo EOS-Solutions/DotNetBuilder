@@ -30,7 +30,7 @@ jobs:
         steps:
 
         - task: AzureRmWebAppDeployment@4
-          displayName: 'Deploy Azure App Service'
+          displayName: 'Deploy ${{ parameters.JobName }} to ${{ parameters.SlotName }}'
           inputs:
             azureSubscription: '${{ parameters.AzureSubscriptionName }}'
             appType: '${{ parameters.AppType }}'
