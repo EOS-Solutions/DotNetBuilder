@@ -26,7 +26,7 @@ jobs:
               nuGetServiceConnections: 'Installer-Public'
             ${{ else }}:
               nuGetServiceConnections: 'Installer-Internal'
-        - template: '../tasks/publish-installer-gin.yml@templates'
+        - template: '../tasks/publish-installer-gin.yml'
           parameters:
             ${{ if eq(parameters.public, true) }}:
               feedName: public
