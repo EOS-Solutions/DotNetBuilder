@@ -117,6 +117,17 @@ jobs:
         . $DotNetBuilder_Root\dotNetPack.ps1 -Folder $Folder
 
   - task: PowerShell@2
+    displayName: Extract documentation
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        Import-Module DotNetBuilder
+        $Folder = '${{ parameters.folder }}'
+        if (-not $Folder) { $Folder = $pwd }
+        . $DotNetBuilder_Root\dotNetDocs.ps1 -Folder $Folder
+
+  - task: PowerShell@2
     displayName: Post-Build Scripts
     inputs:
       pwsh: true
