@@ -20,7 +20,7 @@ function Invoke-DotNetTests {
     if ($PSCmdlet.ParameterSetName -eq "Folder") {
         if (-not $Folder) { $Folder = $pwd }
         $Folder = Resolve-Path -Path $Folder
-        $SolutionFilename = Get-ChildItem $Folder -Filter *.sln | Select-Object -First 1 -ExpandProperty FullName
+        $SolutionFilename = @(Get-ChildItem $Folder -Filter *.sln -ErrorAction SilentlyContinue) + @(Get-ChildItem $Folder -Filter *.slnx -ErrorAction SilentlyContinue) | Select-Object -First 1 -ExpandProperty FullName
         $TestSourceFilename = $SolutionFilename
     }
     if ($PSCmdlet.ParameterSetName -eq "SolutionFilename") {

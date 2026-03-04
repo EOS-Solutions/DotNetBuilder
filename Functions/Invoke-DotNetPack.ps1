@@ -20,7 +20,7 @@ function Invoke-DotNetPack {
         if (-not $SolutionFilename) {
             if (-not $Folder) { $Folder = $pwd }
             $Folder = Resolve-Path $Folder
-            $SolutionFilename = Get-ChildItem $Folder -Filter *.sln | Select-Object -First 1 -ExpandProperty FullName
+            $SolutionFilename = @(Get-ChildItem $Folder -Filter *.sln -ErrorAction SilentlyContinue) + @(Get-ChildItem $Folder -Filter *.slnx -ErrorAction SilentlyContinue) | Select-Object -First 1 -ExpandProperty FullName
         }
         else {
             $Folder = [IO.Path]::GetDirectoryName($SolutionFilename)
