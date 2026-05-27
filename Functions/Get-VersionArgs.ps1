@@ -4,8 +4,8 @@ function Get-VersionArgs {
         [String] $Version
     )
 
+    $ActualBuildVersion = $Version
     $VersionParts = $BuildVersion.Split(".")
-    $ActualBuildVersion = "`"$($VersionParts[0]).$($VersionParts[1]).$($VersionParts[2])`""
     $BuildAssemblyVersion = "`"$($VersionParts[0]).$($VersionParts[1]).0`""
     Write-Host "Using explicit assembly file version: $ActualBuildVersion"
     Write-Host "Using explicit assembly version: $BuildAssemblyVersion"
