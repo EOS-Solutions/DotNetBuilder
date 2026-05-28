@@ -51,11 +51,9 @@ function Invoke-DotNetPack {
             "--no-build"
         )
         if ($BuildVersion) {
-            $VersionParts = $BuildVersion.Split('.')
-            $SemBuildVersion = "$($VersionParts[0]).$($VersionParts[1]).$($VersionParts[2])"
-            Write-Host "Using explicit package version: $SemBuildVersion"
+            Write-Host "Using explicit package version: $BuildVersion"
             $packArgs += @(
-                "/p:PackageVersion=`"$SemBuildVersion`""
+                "/p:PackageVersion=`"$BuildVersion`""
             )
         }
 
